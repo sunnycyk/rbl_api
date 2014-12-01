@@ -42,7 +42,6 @@ app.RBL_TX_UUID_DESCRIPTOR = '00002902-0000-1000-8000-00805f9b34fb';
 var bleList = null;
 var connectButton = null;
 var controlList = null;
-//app.ui = false; // Not ready
 
 app.initialize = function() {
     app.connected = false;
@@ -53,12 +52,15 @@ app.initialize = function() {
 
 app.connectBtn = function() {
     if (app.connected) {
+        connectButton.text('Connect');
+       
         app.disconnect();
+      
+  
     }
     else {
         app.startScan();
     }
-
 };
 
 app.startScan = function() {
@@ -125,7 +127,7 @@ app.connectTo = function(address) {
                     function(errorCode){console.log('BLE enableNotification error: ' + errorCode);});
                 $.mobile.loading('hide');
                 $.mobile.changePage('#control');
-                $.mobile.loading('show', {});
+               // $.mobile.loading('show', {});
                 connectButton.text('Disconnect');
             };
 
@@ -238,6 +240,24 @@ app.servoWrite = function(pin, value) {
     app.sendData(buf);
 };
 
+app.digitalRead = function(pin) {
+    var buf = [0x47, pin];
+    app.sendData(buf);
+};
+
+app.digitalWrite = function(pin, value) {
+    var buf = [0x54, pin, value];
+    app.sendData(buf);
+};
+
+
+app.setPinMode = function(pin, mode) {
+    var buf = [0x53, pin, mode];
+    app.sendData(buf);
+};
+
+
+
 // Receive 
 app.receivedData = function(data) {
     if (app.connected) {
@@ -299,128 +319,134 @@ app.didReceiveTotalPinCount = function(count) {
 app.didReceivePinCapability = function(pin, value) {
     console.log('Receive Pin Capability: pin ' + pin + ',value:' + value); 
     app.pin_cap[pin] = value;
-    controlList.append('<li id="pin_' + pin + '"></li>');
+    if (app.pin_cap[pin] == 0) 
+        return;
+
+    var html = '<li id="pin_' + pin + '"><div class="ui-grid-a"><div class="ui-block-a">Pin ' + pin +'</div><div class="ui-block-b"></div></div>';
+    
+    html += '<div class="ui-grid-a"><div id="pin_mode" class="ui-block-a">';
+
+    html += '<select id="select-' + pin + '" data-role="none" data-mini="true">';
+    if (app.pin_cap[pin] & 0x01) {
+        html += '<option value="0">Input</option>';
+        html += '<option value="1">Output</option>';
+    }
+    if (app.pin_cap[pin] & 0x02) {
+        html += '<option value="2">Analog</option>';
+    }
+    if (app.pin_cap[pin] & 0x04) {
+        html += '<option value="3">PWM</option>';
+    }
+    if (app.pin_cap[pin] & 0x08) {
+        html += '<option value="4">Servo</option>';
+    }
+    html += '</select>';
+
+    html += '</div><div id="pin_value" class="ui-block-b"></div></div></li>';
+    controlList.append(html);
+    $('select[id|="select"]').selectmenu();
+    controlList.listview('refresh');
 };
 
 app.didReceiveCustomData = function(data, length) {
    
     // ABC received pin ready
-    if (data.length == 3 && data[0] == 0x41 && data[1] == 0x42 && data[2] == 0x43) {
-       
-    //   app.createUI();
-   
+    if (data.length == 3 && data[0] == 0x41 && data[1] == 0x42 && data[2] == 0x43) { 
+        //$.mobile.loading('hide');  
+       // navigator.notification.alert('Load Done', function alertDismissed() {});
    }
-   // navigator.notification.alert(data,function alertDismissed() {});
-
 };
-
-app.createUI = function() {
-
-   /* controlList.empty();
-    for (var i=0; i < app.totalPinCount; i++) {
-        var html = '<li>';
-        var pin, mode, fun;
-        var select_mode = '<select id="select-' + pin + '" data-role="none" data-mini="true">';
-
-        pin = i;
-        if (!app.pin_cap[pin])  {
-            continue;
-        }
-        if (app.pin_cap[pin] & 0x01) {
-            select_mode += '<option value="input">Input</option>';
-            select_mode += '<option value="output">Output</option>';
-        }
-        if (app.pin_cap[pin] & 0x02) {
-            select_mode += '<option value="analog">Analog</option>';
-        }
-        if (app.pin_cap[pin] & 0x04) {
-            select_mode += '<option value="pwm">PWM</option>';
-        }
-        if (app.pin_cap[pin] & 0x08) {
-            select_mode += '<option value="servo">Servo</option>';
-        }
-        select_mode += '</select>';
-       
-        $select_mode = $(select_mode);
-
-        switch (app.pin_mode[pin] ) {
-            case 0x00:  // INPUT
-                    mode = "input";
-                    fun =  '<select name="flip-' + pin + '" id="flip-' + pin + '" data-role="slider" data-mini="true">' +
-                '<option value="0">Off</option><option value="1">On</option>' +
-                '</select>';
-                    break;
-            case 0x01:  // OUTPUT
-                   mode = "output";
-                   fun =  '<select name="flip-' + pin + '" id="flip-' + pin + '" data-role="slider" data-mini="true">' +
-                '<option value="0">Off</option><option value="1">On</option>' +
-                '</select>';
-                    break;
-            case 0x02: //ANALOG
-                    fun = '<div id="analog-' + pin + '">0</div>';
-                    mode ='analog';
-
-                    break;
-            case 0x03: // PWM 
-                    fun = '<input type="range" id="slider-' + pin + '" min="0" max="100" value="0" />';
-                    mode ='pwm';
-                    break;
-            case 0x04: //SERVO
-                    fun =  '<input type="range" id="slider-' + pin + '" min="0" max="100" value="0" />';
-                    mode ='servo';
-                    break;
-
-        }
-
-        html += '<div> Pin ' + pin + ' </div>' + 
-                '<div class="ui-grid-a">' +
-                '<div class="ui-block-a">' + select_mode + '</div>' +
-                '<div class="ui-block-b">' + fun  + '</div>';
-               
- 
-        html += '</div></li>';
-
-        controlList.append(html);
-    }
-    $('select[id|="select"]').selectmenu();
-    $('select[id|="flip"]').slider();
-   controlList.listview('refresh');
-    $.mobile.loading('hide');
-    app.ui = true;*/
-}
 
 app.didReceivePinMode = function(pin, mode) {
     console.log('Receive Pin Mode: ' + pin + ' ' + mode);
 
     app.pin_mode[pin] = mode;
-    
 };
 
 
 app.didReceivePinData = function(pin, mode, value) {
     console.log('Receive Pin Data: ' + pin + ' ' + mode + ' ' + value);
 
-
+    var pin_value = $('li#pin_' + pin + ' div#pin_value');
+    var pin_mode = $('li#pin_' + pin + ' div#pin_mode select');
     var _mode = mode & 0x0F;
+
+    var inputoutputHtml = '<select name="flip-' + pin + '" id="flip-' + pin + '" data-role="slider">' +
+                          '<option value="0">Off</option><option value="1">On</option></select>'; 
 
     app.pin_mode[pin] = _mode;
      switch(_mode) {
-        case 0x00: // INPUT
-        case 0x01: // OUTPUT 
+        case 0x00: // INPUT 
             app.pin_digital[pin] = value;
+            pin_mode.val(0).attr('selected', true).siblings('option').removeAttr('selected');
+                     break;
+        case 0x01: // OUTPUT  
+            app.pin_digital[pin] = value;
+           
+            pin_mode.val(1).attr('selected', true).siblings('option').removeAttr('selected');
             break;
         case 0x02:
             app.pin_analog[pin] = ((mode >> 4) << 8) + value;
+            pin_mode.val(2).attr('selected', true).siblings('option').removeAttr('selected');
             break;
         case 0x03:
             app.pin_pwm[pin] = value;
+            pin_mode.val(3).attr('selected', true).siblings('option').removeAttr('selected');
             break;
         case 0x04:
             app.pin_servo[pin] = value;
+            pin_mode.val(4).attr('selected', true).siblings('option').removeAttr('selected');
             break;
     };
+    pin_mode.selectmenu('refresh', true);
+
+    // if change mode
+    pin_mode.change(function() {
+        app.setPinMode(pin, pin_mode.val());
+    });
+
+    if (_mode == 0x00 || _mode == 0x01) {
+        pin_value.empty();
+        pin_value.append(inputoutputHtml);
+        var selectPin = pin_value.find('select#flip-' + pin);
+        selectPin.val(value).attr('selected', true).siblings('option').removeAttr('selected');
+        selectPin.slider();
+        if (_mode == 0x00) {
+            selectPin.slider('disable');
+        }
+        else {
+            selectPin.change(function() {
+            
+                app.digitalWrite(pin, selectPin.val());
+            });
+        }
+    
+    } 
+    else if (_mode == 0x02) {
+        pin_value.empty();
+        pin_value.append('<input type="text" id="analog-' + pin + '" data-mini="true" size="6" readonly value="' + app.pin_analog[pin] + '" />');
+    }
+    else if (_mode == 0x03) {
+        pin_value.empty();
+        pin_value.append('<input type="range" id="pwm-' + pin + '" min="0" max="255" value="' + value + '" />');
+        var changePWM = pin_value.find('input#pwm-' + pin);
+        changePWM.change(function() {
+
+
+            app.analogWrite(pin, changePWM.val());
+        });
+    }
+    else if (_mode == 0x04) {
+        pin_value.empty();
+        pin_value.append('<input type="range" id="servo-' + pin + '" min="0" max="180" value="' + value + '" />');
+        var changeServo = pin_value.find('input#servo-' + pin);
+        changeServo.change(function() {
+            app.servoWrite(pin, changeServo.val());
+        });
+    }
 
 };
+
 
 app.disconnect = function(errorMessage) {
 
@@ -434,7 +460,7 @@ app.disconnect = function(errorMessage) {
     easyble.stopScan();
     controlList.empty();
     easyble.closeConnectedDevices();
-    connectButton.text('Connect');
+
     console.log('Disconnected');
 };
 
