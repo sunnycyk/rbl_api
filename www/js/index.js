@@ -41,26 +41,22 @@ app.RBL_TX_UUID_DESCRIPTOR = '00002902-0000-1000-8000-00805f9b34fb';
 // UI
 var bleList = null;
 var connectButton = null;
+var disconnectButton = null;
 var controlList = null;
 
 app.initialize = function() {
     app.connected = false;
     bleList = $('ul#bleList');
     connectButton = $('a#connectButton');
+    disconnectButton = $('a#disconnectButton');
     controlList = $('ul#controlList');
+    disconnectButton.hide();
 };
 
 app.connectBtn = function() {
-    if (app.connected) {
-        connectButton.text('Connect');
-       
-        app.disconnect();
-      
-  
-    }
-    else {
-        app.startScan();
-    }
+    connectButton.hide();
+    app.startScan();
+
 };
 
 app.startScan = function() {
@@ -127,8 +123,9 @@ app.connectTo = function(address) {
                     function(errorCode){console.log('BLE enableNotification error: ' + errorCode);});
                 $.mobile.loading('hide');
                 $.mobile.changePage('#control');
-               // $.mobile.loading('show', {});
-                connectButton.text('Disconnect');
+                $.mobile.loading('show', {});
+                connectButton.hide();
+                disconnectButton.show();
             };
 
             function onServiceFailure(errorCode) {
@@ -352,7 +349,7 @@ app.didReceiveCustomData = function(data, length) {
    
     // ABC received pin ready
     if (data.length == 3 && data[0] == 0x41 && data[1] == 0x42 && data[2] == 0x43) { 
-        //$.mobile.loading('hide');  
+        $.mobile.loading('hide');  
        // navigator.notification.alert('Load Done', function alertDismissed() {});
    }
 };
@@ -460,6 +457,8 @@ app.disconnect = function(errorMessage) {
     easyble.stopScan();
     controlList.empty();
     easyble.closeConnectedDevices();
+    connectButton.show();
+    disconnectButton.hide();
 
     console.log('Disconnected');
 };
