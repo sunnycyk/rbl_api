@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" href="bower/components/jquery-mobile-bower/css/jquery.mobile-1.4.2.css">
+        <link rel="stylesheet" href="bower/components/jquery-mobile-bower/css/jquery.mobile.theme-1.4.2.css">
+        <title>RedBearLab API</title>
+    </head>
+    <body>
+        <!-- Controller View -->
+        <div data-role="page" id="control">
+            <div data-role="header" data-position="fixed">
+                <a id="connectButton" href="#devicesList" onclick="app.connectBtn()">Connect</a>
+                <h1>RBL API</h1>
+            </div>
+            <div data-role="content">
+                <ul data-role="listview" id="controlList">
+                </ul>
+            </div>
+        </div>
+    
+
+        <!-- Device View -->
+        <div data-role="page" id="devicesList">
+            <div data-role="header" data-position="fixed">
+                <a href="#control">Cancel</a>
+                <h1>Select Device</h1>
+            </div>
+            <div data-role="content">
+                <ul data-role="listview" id="bleList">
+                </ul>
+            </div>
+        </div>
+
+
+         <script type="text/javascript" src="bower/components/jquery/dist/jquery.min.js"></script>
+        <script type="text/javascript" src="bower/components/jquery-mobile-bower/js/jquery.mobile-1.4.2.min.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/easy-ble.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+    </body>
+</html>
