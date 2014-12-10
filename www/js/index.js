@@ -80,8 +80,8 @@ app.startScan = function() {
     };
 
     function onScanFail(errorCode) {
-        app.disconnect();
-        navigator.notification.alert('Error: ' + errorCode, function() {});
+        app.disconnect('Error: ' + errorCode);
+       // navigator.notification.alert('Error: ' + errorCode, function() {});
 
         console.log('Error ' + errorCode);
     };
