@@ -18,7 +18,7 @@
  */
 
 document.addEventListener('deviceready', function() { app.initialize(); }, false);
-
+easyble = evothings.easyble;
 var app = {};
 
 app.devices = {};
@@ -69,6 +69,9 @@ app.startScan = function() {
 
     function onScanSuccess(device) {
 
+        if (app.devices[device.address]) {
+            return;
+        }
         app.devices[device.address] = device;
         console.log('Found: ' + device.name + ', ' + device.address);
       //  success(device);
@@ -146,7 +149,7 @@ app.connectTo = function(address) {
     function onConnectFailure(errorCode) {
 
             // Disconnect and show an error message to the user.
-            app.disconnect();
+            app.disconnect('Disconnected from device');
 
             // Write debug information to console
             console.log('Error ' + errorCode);
