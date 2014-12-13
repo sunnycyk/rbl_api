@@ -2,10 +2,10 @@
 <widget id="hk.sunnycyk.rbl_api" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>RBL_API</name>
     <description>
-        A sample Apache Cordova application that responds to the deviceready event.
+        A BLE Controller App for Red Bear Lab BLEController Sketch
     </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
+    <author email="sunnycyk@yahoo.com" href="http://sunnycyk.com">
+        Sunny Cheung
     </author>
     <content src="index.html" />
     <access origin="*" />
